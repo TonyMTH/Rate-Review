@@ -65,37 +65,18 @@ def collate(batch, vectorizer):
     return inputs, target
 
 
-def get_load_train_ata(PIK, train_file, test_file, max_seq_len, process=True):
-    if Path(PIK).is_file():
-        print("Data in Pickle, loading....")
-        with open(PIK, "rb") as f:
-            data = pickle.load(f)
-    else:
-        print("Data not in Pickle, processing in TrainData....")
-        train = load_data(train_file)
-        test = load_data(test_file)
-        # test, train = train.iloc[0:50].reset_index(drop=True), train.iloc[51:400].reset_index(drop=True)
-
-        dataset_train = TrainData(train, max_seq_len)
-        dataset_test = TrainData(test, max_seq_len)
-        data = {'dataset_train': dataset_train, 'dataset_test': dataset_test}
-        with open(PIK, "wb") as f:
-            pickle.dump(data, f)
-    return data['dataset_train'], data['dataset_test']
-
-
 def get_processed_data(PIK, df, max_seq_len, save_freq=50, process=True):
     if process is True:
         # df = load_data(datafile)
         process_data(df, max_seq_len, PIK, save_freq)
     with open(PIK, "rb") as f:
         data = pickle.load(f)
-    return TrainTestData(data)
+    return Dataset(data)
 
 
 def process_data(df, max_seq_len, PIK, save_freq):
     if not Path(PIK).is_file():
-        vec = FastText("simple")
+        vec = FastText()
         vec.vectors[1] = -torch.ones(vec.vectors[1].shape[0])
         vec.vectors[0] = torch.zeros(vec.vectors[0].shape[0])
         data = {'last_id': -1, 'row_shape': df.shape[0], 'sequences': [], 'max_seq_len': max_seq_len,
@@ -125,7 +106,7 @@ def process_data(df, max_seq_len, PIK, save_freq):
                     pickle.dump(data, f)
 
 
-class TrainTestData(Dataset):
+class Dataset(Dataset):
     def __init__(self, data):  # df is the input df, max_seq_len is the max
         # lenght allowed to a sentence before cutting or padding
         self.max_seq_len = data['max_seq_len']
@@ -133,33 +114,6 @@ class TrainTestData(Dataset):
         self.vectorizer = self.get_vectorize
         self.labels = data['star']
         self.sequences = data['sequences']
-
-    def __len__(self):
-        return len(self.sequences)
-
-    def __getitem__(self, i):
-        assert len(self.sequences[i]) == self.max_seq_len
-        return self.sequences[i], self.labels[i]
-
-    def get_vectorize(self, x):
-        return self.vec.vectors[x]
-
-
-class TrainData(Dataset):
-    def __init__(self, df, max_seq_len):  # df is the input df, max_seq_len is the max
-        # lenght allowed to a sentence before cutting or padding
-        self.max_seq_len = max_seq_len
-
-        self.vec = FastText("simple")
-        self.vec.vectors[1] = -torch.ones(self.vec.vectors[1].shape[0])  # replacing the vector associated with 1
-        # (padded value) to become a vector of -1.
-        self.vec.vectors[0] = torch.zeros(
-            self.vec.vectors[0].shape[0])  # replacing the vector associated with 0 (unknown) to become zeros
-        self.vectorizer = self.get_vectorize
-        self.labels = df.star
-        sequences = [padding(encoder(preprocessing(sequence), self.vec), max_seq_len) for sequence in
-                     df.review.tolist()]
-        self.sequences = sequences
 
     def __len__(self):
         return len(self.sequences)
@@ -248,12 +202,14 @@ def train_loop(model, epochs, optimizer, criterion, train_loader, test_loader, e
             print("Train Acc: {:.4f}".format(train_accu), end=' ')
             print("Test Acc: {:.4f}".format(test_accu))
 
+            # Save data to pickle
+            data = {'train_loss': train_loss, 'train_acc': train_acc, 'test_acc': test_acc}
+            with open(PIK_plot_data, "wb") as f:
+                pickle.dump(data, f)
+
         model.train()
 
-    # Save data to pickle
-    data = {'train_loss': train_loss, 'train_acc': train_acc, 'test_acc': test_acc}
-    with open(PIK_plot_data, "wb") as f:
-        pickle.dump(data, f)
+
 
 
 if __name__ == '__main__':

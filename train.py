@@ -14,22 +14,22 @@ df_test = pr.load_data(data_test)
 output_dim = len(df_train.star.unique())
 
 # Define Model
-model = md.Classifier(max_seq_len, emb_dim, hidden1, hidden2, hidden3, output_dim)
-# model = md.Classifier2(output_dim)
+model = md.Model1(max_seq_len, emb_dim, hidden1, hidden2, hidden3, output_dim)
+# model = md.Model2(output_dim)
 model.to(device)
 print("2.\tModel defined and moved to " + str(device.__str__()))
 
 # Parameters
-optimizer = optimizer(model.parameters())
+optimizer = Optimizer(model.parameters())
 print("3.\tCriterion set as " + str(criterion.__str__()))
 print("4.\tOptimizer set as " + str(optimizer.__str__()))
 
 # Loaders
 # dataset_train, dataset_test = pr.get_load_train_ata(PIK, data_train, data_test, max_seq_len)
 print('5.\tprocessing train data.......')
-dataset_train = pr.get_processed_data(PIK_train, df_train, max_seq_len, save_freq=100, process=False)
+dataset_train = pr.get_processed_data(PIK_train, df_train, max_seq_len, save_freq=200, process=False)
 print('6.\tprocessing test data.......')
-dataset_test = pr.get_processed_data(PIK_test, df_test, max_seq_len, save_freq=100, process=False)
+dataset_test = pr.get_processed_data(PIK_test, df_test, max_seq_len, save_freq=200, process=False)
 
 print("7.\tCollate")
 train_collate = lambda batch: pr.collate(batch, vectorizer=dataset_train.vectorizer)

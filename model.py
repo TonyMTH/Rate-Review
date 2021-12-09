@@ -3,9 +3,9 @@ import torch.nn.functional as F
 import parameters as p
 
 
-class Classifier(nn.Module):
+class Model1(nn.Module):
     def __init__(self, max_seq_len, emb_dim, output_dim, hidden1=16, hidden2=16, hidden3=16):
-        super(Classifier, self).__init__()
+        super(Model1, self).__init__()
         self.fc1 = nn.Linear(max_seq_len * emb_dim, hidden1)
         self.fc2 = nn.Linear(hidden1, hidden2)
         self.fc3 = nn.Linear(hidden2, hidden3)
@@ -24,23 +24,23 @@ class Classifier(nn.Module):
         return self.out(x)
 
 
-Classifier2 = lambda x: nn.Sequential(nn.Linear(p.max_seq_len * p.emb_dim, 512),
-                                      nn.ReLU(),
-                                      nn.Dropout(0.1),
-                                      nn.Linear(512, 256),
-                                      nn.ReLU(),
-                                      nn.Dropout(0.1),
-                                      nn.Linear(256, 500),
-                                      nn.ReLU(),
-                                      nn.Dropout(0.1),
-                                      nn.Linear(500, 500),
-                                      nn.ReLU(),
-                                      nn.Dropout(0.1),
-                                      nn.Linear(500, x),
-                                      nn.LogSoftmax(dim=1)
-                                      )
+Model2 = lambda x: nn.Sequential(nn.Linear(p.max_seq_len * p.emb_dim, 512),
+                                 nn.ReLU(),
+                                 nn.Dropout(0.1),
+                                 nn.Linear(512, 256),
+                                 nn.ReLU(),
+                                 nn.Dropout(0.1),
+                                 nn.Linear(256, 500),
+                                 nn.ReLU(),
+                                 nn.Dropout(0.1),
+                                 nn.Linear(500, 500),
+                                 nn.ReLU(),
+                                 nn.Dropout(0.1),
+                                 nn.Linear(500, x),
+                                 nn.LogSoftmax(dim=1)
+                                 )
 
-Classifier3 = lambda x: nn.Sequential(
+Model3 = lambda x: nn.Sequential(
     nn.Linear(p.max_seq_len * p.emb_dim, 64),
     nn.Tanh(),
     nn.Linear(64, 64),

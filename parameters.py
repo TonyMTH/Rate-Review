@@ -8,7 +8,7 @@ max_seq_len = 32
 
 lr = 0.003
 criterion = nn.CrossEntropyLoss()
-optimizer = lambda x: optim.SGD(x, lr=lr, momentum=0.6)
+Optimizer = lambda x: optim.SGD(x, lr=lr, momentum=0.6)
 
 hidden1, hidden2, hidden3 = 256, 256, 256
 
